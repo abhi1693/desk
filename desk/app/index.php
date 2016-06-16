@@ -8,7 +8,16 @@
 |----------------------------------------------------------------
 */
 if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50400) {
-    exit('Desk requires minimum PHP 5.4.0 or later, but your running ' . PHP_VERSION . '. Please upgrade to PHP 5.4.0!');
+	throw new Exception('Desk requires minimum PHP 5.4.0 or later, but your running ' . PHP_VERSION . '. Please upgrade to PHP 5.4.0!');
+}
+
+/*
+|----------------------------------------------------------------
+| Multi-byte String Check
+|----------------------------------------------------------------
+*/
+if (!extension_loaded('mbstring') || (extension_loaded('mbstring') && ini_get('mbstring.func_overload') != 0)) {
+	throw new Exception('Desk requires the <a href="http://php.net/manual/en/book.mbstring.php" target="_blank">PHP multi-byte string</a> extension in order to run.');
 }
 
 /*
@@ -24,35 +33,33 @@ date_default_timezone_set('Asia/Kolkata');
 |----------------------------------------------------------------
 */
 $createFolder = function ($path) {
-    if (!is_dir($path)) {
-        $oldumask = umask(0);
+	$oldumask = umask(0);
 
-        if (!@mkdir($path, 0755, TRUE)) {
-            http_response_code(503);
-            exit('Could not create a folder at ' . $path);
-        }
+	if (!@mkdir($path, 0755, TRUE) && !is_dir($path)) {
+		http_response_code(503);
+		throw new Exception('Could not create a folder at ' . $path);
+	}
 
-        chmod($path, 0755);
-        umask($oldumask);
-    }
+	chmod($path, 0755);
+	umask($oldumask);
 };
 
 $ensureDirReadable = function ($path, $writable = FALSE) {
-    $realpath = realpath($path);
+	$realpath = realpath($path);
 
-    if ($realpath === FALSE || !is_dir($realpath) || !@file_exists($realpath . '/.')) {
-        http_response_code(503);
+	if ($realpath === FALSE || !is_dir($realpath) || !@file_exists($realpath . '/.')) {
+		http_response_code(503);
 
-        exit(($realpath !== FALSE ? $realpath : $path) . ' doesn\'t exist or isn\'t writable by PHP.');
-    }
+		throw new Exception(($realpath !== FALSE ? $realpath : $path) . ' doesn\'t exist or isn\'t writable by PHP.');
+	}
 
-    if ($writable) {
-        if (!is_writable($realpath)) {
-            http_response_code(503);
+	if ($writable) {
+		if (!is_writable($realpath)) {
+			http_response_code(503);
 
-            exit ($realpath . ' isn\'t writable by PHP.');
-        }
-    }
+			throw new Exception($realpath . ' isn\'t writable by PHP.');
+		}
+	}
 };
 
 /*
@@ -90,7 +97,7 @@ $createFolder($storagePath . '/logs');
 $ensureDirReadable($configPath);
 // Validate License Key file
 if (!file_exists($licensePath)) {
-    exit($licensePath . ' doesn\'t exist.');
+	throw new Exception($licensePath . ' doesn\'t exist.');
 }
 
 // Validate permissions on desk/storage/
@@ -109,15 +116,15 @@ ini_set('error_log', $storagePath . '/logs/errors.log');
 */
 
 if (DESK_DEV_MODE) {
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-    defined('YII_DEBUG') || define('YII_DEBUG', TRUE);
-    defined('YII_ENV') || define('YII_ENV', 'dev');
+	error_reporting(E_ALL);
+	ini_set('display_errors', 1);
+	defined('YII_DEBUG') || define('YII_DEBUG', TRUE);
+	defined('YII_ENV') || define('YII_ENV', 'dev');
 } else {
-    error_reporting(0);
-    ini_set('display_errors', 0);
-    defined('YII_DEBUG') || define('YII_DEBUG', FALSE);
-    defined('YII_ENV') || define('YII_ENV', 'prod');
+	error_reporting(0);
+	ini_set('display_errors', 0);
+	defined('YII_DEBUG') || define('YII_DEBUG', FALSE);
+	defined('YII_ENV') || define('YII_ENV', 'prod');
 }
 
 /*
@@ -128,3 +135,4 @@ if (DESK_DEV_MODE) {
 require $appPath . '/vendor/autoload.php';
 require $appPath . '/vendor/yiisoft/yii2/Yii.php';
 require $appPath . '/Desk.php';
+
