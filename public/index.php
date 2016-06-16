@@ -1,7 +1,7 @@
 <?php
 
 // Path to your desk/ folder
-$deskPath = './desk';
+$deskPath = '../desk';
 
 // Desk default environment (DEV)
 define('DESK_DEV_MODE', TRUE);
