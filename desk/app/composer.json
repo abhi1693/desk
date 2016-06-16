@@ -1,0 +1,20 @@
+{
+    "type": "project",
+    "prefer-stable": true,
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.4.0",
+        "yiisoft/yii2": "~2.0.8",
+        "yiisoft/yii2-bootstrap": "~2.0.6",
+        "danielstjules/stringy": "~1.9"
+    },
+    "config": {
+        "process-timeout": 1800
+    },
+    "extra": {
+        "asset-installer-paths": {
+            "npm-asset-library": "vendor/npm",
+            "bower-asset-library": "vendor/bower"
+        }
+    }
+}
